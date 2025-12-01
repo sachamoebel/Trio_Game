@@ -5,15 +5,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Classe représentant le plateau de jeu avec toutes les cartes
+ * Classe représentant le plateau de jeu avec toutes les cartes encore en jeu.
  */
 public class Plateau {
-    private List<Carte> cartesCentre;   // cartes disponibles au centre (après distribution)
-    private List<Trio> triosFormes;
-
+    private List<Carte> cartesCentre;   // cartes disponibles au centre
+    // private List<Trio> triosFormes; // RETIRÉ
+    
     public Plateau() {
         this.cartesCentre = new ArrayList<>();
-        this.triosFormes = new ArrayList<>();
+        // this.triosFormes = new ArrayList<>(); // RETIRÉ
     }
 
     /**
@@ -31,25 +31,13 @@ public class Plateau {
 
     /**
      * Initialise les cartes (utile si tu veux juste remplir le plateau sans distribuer)
-     * Ici on remplit cartesCentre avec le jeu complet mélangé (rarement nécessaire si on utilise distribuerCartes)
      */
     public void initialiserCartes() {
-        List<Carte> jeu = genererJeuComplet();
-        Collections.shuffle(jeu);
-        this.cartesCentre = new ArrayList<>(jeu);
+        // Aucune action spécifique n'est nécessaire ici, la distribution est faite par distribuerCartes
     }
 
     /**
-     * Distribue les cartes entre les joueurs et le centre selon tes règles :
-     * - 3 joueurs : 9 cartes/joueur, 9 au centre
-     * - 4 joueurs : 7 cartes/joueur, 8 au centre
-     * - 5 joueurs : 6 cartes/joueur, 6 au centre
-     * - 6 joueurs : 5 cartes/joueur, 6 au centre
-     *
-     * La distribution est ALÉATOIRE et les mains sont triées par ordre croissant (valeur du type).
-     *
-     * @param nbJoueurs Le nombre de joueurs (3 à 6)
-     * @param joueurs La liste des joueurs (taille == nbJoueurs)
+     * Distribue les cartes entre les joueurs et le centre.
      */
     public void distribuerCartes(int nbJoueurs, List<Joueur> joueurs) {
         if (joueurs == null || joueurs.size() != nbJoueurs) {
@@ -84,14 +72,7 @@ public class Plateau {
                 throw new IllegalArgumentException("Nombre de joueurs non supporté (doit être entre 3 et 6) : " + nbJoueurs);
         }
 
-        // Vérif sécurité : cartesParJoueur * nbJoueurs + cartesAuCentre doit être <= 36
-        int totalDistribue = cartesParJoueur * nbJoueurs + cartesAuCentre;
-        if (totalDistribue > pioche.size()) {
-            throw new IllegalStateException("Le total de cartes à distribuer (" + totalDistribue + ") dépasse le nombre de cartes disponibles (" + pioche.size() + ").");
-        }
-
-
-        // Distribuer aux joueurs (tour par tour pour plus d'équité si souhaité)
+        // Distribution aux joueurs
         for (int round = 0; round < cartesParJoueur; round++) {
             for (Joueur joueur : joueurs) {
                 if (pioche.isEmpty()) break;
@@ -100,44 +81,45 @@ public class Plateau {
             }
         }
 
-        // Trier les mains des joueurs par valeur croissante
+        // Tri et initialisation des cartes face cachée
         for (Joueur joueur : joueurs) {
-            joueur.trierMain(); // méthode ajoutée dans Joueur.java (voir plus bas)
+            joueur.trierMain(); 
+            for(Carte c : joueur.getMain()) {
+                c.cacher();
+            }
         }
 
-        // Prendre les cartes restantes pour le centre (nombre exact)
+        // Cartes au centre
         cartesCentre.clear();
         for (int i = 0; i < cartesAuCentre && !pioche.isEmpty(); i++) {
-            cartesCentre.add(pioche.remove(0));
+            Carte c = pioche.remove(0);
+            c.cacher(); // Cartes du centre face cachée au départ
+            cartesCentre.add(c);
         }
-
-        // Note : si tu veux garder la pioche restante pour piocher plus tard, laisse pioche,
-        // sinon ici toutes les cartes distribuées + centre = totalDistribue, et le reste (s'il y en a) est ignoré.
     }
-
-    /* --- méthodes existantes (inchangées) --- */
 
     /**
      * Vérifie si une carte peut être retournée selon les règles
-     * - première/dernière d'une main
-     * - ou n'importe quelle carte du centre
      */
-    public boolean peutRetourner(Carte carte, Joueur joueurActif, List<Joueur> tousJoueurs) {
+    public boolean peutRetourner(Carte carte, List<Joueur> tousJoueurs) {
         if (carte == null || carte.estVisible()) {
             return false;
         }
 
+        // Vérifier le centre
         if (cartesCentre.contains(carte)) {
             return true;
         }
 
+        // Vérifier les mains des joueurs
         for (Joueur joueur : tousJoueurs) {
             List<Carte> main = joueur.getMain();
-            int index = main.indexOf(carte);
-
-            if (index != -1) {
-                return index == 0 || index == main.size() - 1;
+            if (!main.contains(carte)) {
+                continue;
             }
+            
+            int index = main.indexOf(carte);
+            return index == 0 || index == main.size() - 1;
         }
 
         return false;
@@ -156,6 +138,9 @@ public class Plateau {
         return c1.equals(c2) && c2.equals(c3);
     }
 
+    /**
+     * Retire les cartes du trio des mains des joueurs et/ou du centre.
+     */
     public void retirerTrio(List<Carte> trio, List<Joueur> joueurs) {
         if (trio == null || trio.size() != 3) return;
         for (Carte carte : trio) {
@@ -168,17 +153,7 @@ public class Plateau {
         }
     }
 
-    public List<Carte> obtenirCartesVisibles() {
-        List<Carte> cartesVisibles = new ArrayList<>();
-        for (Carte carte : cartesCentre) {
-            if (carte.estVisible()) cartesVisibles.add(carte);
-        }
-        return cartesVisibles;
-    }
-
-    public void cacherToutesLesCartes() {
-        for (Carte carte : cartesCentre) carte.cacher();
-    }
+    // --- Getters ---
 
     public boolean aDesCartes() {
         return !cartesCentre.isEmpty();
@@ -188,16 +163,10 @@ public class Plateau {
         return new ArrayList<>(cartesCentre);
     }
 
-    public List<Trio> getTriosFormes() {
-        return new ArrayList<>(triosFormes);
-    }
-
-    public void ajouterTrio(Trio trio) {
-        if (trio != null) triosFormes.add(trio);
-    }
-
+    // REMOVAL: getTriosFormes et ajouterTrio sont maintenant dans Jeu.java (via Joueur.java)
+    
     @Override
     public String toString() {
-        return "Plateau{ cartes au centre=" + cartesCentre.size() + ", trios formés=" + triosFormes.size() + " }";
+        return "Plateau{ cartes au centre=" + cartesCentre.size() + " }";
     }
 }

@@ -3,8 +3,6 @@ package modele;
 import java.util.ArrayList;
 import java.util.List;
 
-// ==================== FICHIER: Jeu.java ====================
-
 /**
  * Classe principale qui gère la logique du jeu Trio
  */
@@ -15,6 +13,7 @@ public class Jeu {
     private int indiceCourant;
     private List<Carte> cartesRetournees;
     private List<Carte> ordreAffichage = new ArrayList<>();
+    
     /**
      * Constructeur de la classe Jeu
      */
@@ -27,7 +26,6 @@ public class Jeu {
     
     /**
      * Démarre une nouvelle partie
-     * @param nomsJoueurs Liste des noms des joueurs
      */
     public void demarrerPartie(List<String> nomsJoueurs) {
         // Créer les joueurs
@@ -45,14 +43,10 @@ public class Jeu {
         joueurCourant = joueurs.get(0);
         
         System.out.println("=== PARTIE DÉMARRÉE ===");
-        System.out.println("Nombre de joueurs: " + joueurs.size());
-        System.out.println("Cartes distribuées!");
     }
     
     /**
      * Joue un tour avec une carte sélectionnée
-     * @param carte La carte à retourner
-     * @return Un message indiquant le résultat de l'action
      */
     public String jouerTour(Carte carte) {
         if (carte == null) {
@@ -60,8 +54,8 @@ public class Jeu {
         }
         
         // Vérifier si on peut retourner cette carte
-        if (!plateau.peutRetourner(carte, joueurCourant, joueurs)) {
-            return "❌ Vous ne pouvez retourner que la première ou dernière carte d'une main, ou n'importe quelle carte du centre!";
+        if (!plateau.peutRetourner(carte, joueurs)) { // Modification: on n'a plus besoin du joueurActif dans Plateau.peutRetourner
+            return "Vous ne pouvez retourner que la première ou dernière carte d'une main, ou n'importe quelle carte du centre!";
         }
         
         // Retourner la carte
@@ -75,12 +69,12 @@ public class Jeu {
         if (cartesRetournees.size() == 2) {
             // Vérifier si les 2 premières cartes sont identiques
             if (!cartesRetournees.get(0).equals(cartesRetournees.get(1))) {
-                String msg = "❌ Les deux cartes ne correspondent pas!";
+                String msg = "Les deux cartes ne correspondent pas!";
                 cacherCartesRetournees();
                 changerJoueur();
                 return msg;
             }
-            return "✅ Deux cartes identiques! Cherchez la troisième...";
+            return "Deux cartes identiques! Cherchez la troisième...";
         }
         
         if (cartesRetournees.size() == 3) {
@@ -88,18 +82,32 @@ public class Jeu {
             if (plateau.verifierTrio(cartesRetournees.get(0), 
                                     cartesRetournees.get(1), 
                                     cartesRetournees.get(2))) {
+                
                 // Trio trouvé!
+                TypeCarte typeTrio = cartesRetournees.get(0).getType(); 
+
                 plateau.retirerTrio(cartesRetournees, joueurs);
                 joueurCourant.incrementerScore();
                 
+                // AJOUTER le trio au joueur courant
                 Trio trio = new Trio(joueurCourant);
                 for (Carte c : cartesRetournees) {
                     trio.ajouterCarte(c);
                 }
-                plateau.ajouterTrio(trio);
+                joueurCourant.ajouterTrio(trio); // MODIFICATION CLÉ
                 
                 cartesRetournees.clear();
-                
+
+                // Vérification spéciale pour le Type 7
+                if (typeTrio == TypeCarte.TYPE7) {
+                     return "🎉 TRIO SPÉCIAL DE TYPE 7 TROUVÉ! " + joueurCourant.getNom() + " marque 1 point et GAGNE LA PARTIE!";
+                }
+
+                // Vérification pour les 3 trios
+                if (joueurCourant.getTriosGagnes().size() >= 3) { // MODIFICATION CLÉ
+                    return "🏆 TROIS TRIOS! " + joueurCourant.getNom() + " marque 1 point et GAGNE LA PARTIE!";
+                }
+
                 // Le joueur rejoue
                 return "🎉 TRIO TROUVÉ! " + joueurCourant.getNom() + " marque 1 point et rejoue!";
             } else {
@@ -132,12 +140,27 @@ public class Jeu {
     }
     
     /**
-     * Vérifie si la partie est terminée
-     * @return true si tous les trios ont été trouvés
+     * Vérifie si la partie est terminée :
+     * 1. Un joueur a obtenu 3 trios.
+     * 2. Le trio de TYPE7 a été formé.
+     * 3. Plus aucune carte chez les joueurs ni au centre.
+     * @return true si la partie est terminée
      */
     public boolean verifierFinPartie() {
-        // Vérifier s'il reste des cartes chez les joueurs ou au centre
-        if (plateau.aDesCartes()) {
+        // Condition 1 & 2 : Trio de 7 ou 3 trios
+        for (Joueur joueur : joueurs) {
+            for (Trio trio : joueur.getTriosGagnes()) {
+                if (trio.getType() == TypeCarte.TYPE7) {
+                    return true;
+                }
+            }
+            if (joueur.getTriosGagnes().size() >= 3) {
+                return true;
+            }
+        }
+        
+        // Condition 3 : Plus de cartes disponibles (Fin de partie par épuisement)
+        if (plateau.getCartesCentre().size() > 0) {
             return false;
         }
         
@@ -151,14 +174,30 @@ public class Jeu {
     }
     
     /**
-     * Obtient le gagnant de la partie
-     * @return Le joueur avec le score le plus élevé
+     * Obtient le gagnant de la partie selon les règles de victoire.
      */
     public Joueur obtenirGagnant() {
         if (joueurs.isEmpty()) {
             return null;
         }
         
+        // 1. Priorité au trio de Type 7
+        for (Joueur joueur : joueurs) {
+            for (Trio trio : joueur.getTriosGagnes()) {
+                if (trio.getType() == TypeCarte.TYPE7) {
+                    return joueur;
+                }
+            }
+        }
+        
+        // 2. Priorité aux 3 trios
+        for (Joueur joueur : joueurs) {
+            if (joueur.getTriosGagnes().size() >= 3) {
+                return joueur; 
+            }
+        }
+        
+        // 3. Score le plus élevé (si fin par épuisement)
         Joueur gagnant = joueurs.get(0);
         for (Joueur joueur : joueurs) {
             if (joueur.getScore() > gagnant.getScore()) {
@@ -169,22 +208,7 @@ public class Jeu {
         return gagnant;
     }
     
-    /**
-     * Obtient toutes les cartes disponibles pour le joueur courant
-     */
-    public List<Carte> obtenirCartesDisponibles() {
-        List<Carte> cartesDisponibles = new ArrayList<>();
-        
-        // Cartes du joueur courant
-        cartesDisponibles.addAll(joueurCourant.getMain());
-        
-        // Cartes du centre
-        cartesDisponibles.addAll(plateau.getCartesCentre());
-        
-        return cartesDisponibles;
-    }
-    
-    // ========== GETTERS ==========
+    // ========== GETTERS ET SETTERS EXISTANTS ==========
     
     public Joueur getJoueurCourant() {
         return joueurCourant;
@@ -202,7 +226,7 @@ public class Jeu {
         return new ArrayList<>(cartesRetournees);
     }
 
-        public List<Carte> getOrdreAffichage() {
+    public List<Carte> getOrdreAffichage() {
         return ordreAffichage;
     }
 
@@ -210,4 +234,3 @@ public class Jeu {
         this.ordreAffichage = ordreAffichage;
     }
 }
-

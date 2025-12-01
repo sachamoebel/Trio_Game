@@ -56,12 +56,13 @@ public class Main {
      */
     private static int demanderNombreJoueurs() {
         int nbJoueurs = 0;
-        while (nbJoueurs < 2 || nbJoueurs > 3) {
-            System.out.print("Nombre de joueurs (2 ou 3): ");
+        while (nbJoueurs < 3 || nbJoueurs > 6) {
+            System.out.print("Nombre de joueurs (3, 4, 5 ou 6): ");
             try {
                 nbJoueurs = Integer.parseInt(scanner.nextLine());
-                if (nbJoueurs < 2 || nbJoueurs > 3) {
-                    System.out.println("⚠ Veuillez entrer 2 ou 3 joueurs.");
+                if (nbJoueurs < 3 || nbJoueurs > 6) {
+                    System.out.println("⚠ Veuillez entrer 3 et 6 joueurs.");
+                    return demanderNombreJoueurs();
                 }
             } catch (NumberFormatException e) {
                 System.out.println("⚠ Veuillez entrer un nombre valide.");
@@ -120,7 +121,7 @@ public class Main {
         Joueur joueurActif = jeu.getJoueurCourant();
         List<Joueur> tousJoueurs = jeu.getJoueurs();
         
-        System.out.println("\n📋 VOS CARTES:");
+        System.out.println("\n VOS CARTES:");
         List<Carte> ordre = new ArrayList<>();
         int index = 1;
         List<Carte> mainJoueur = joueurActif.getMain();
@@ -180,7 +181,7 @@ public class Main {
      * Affiche les scores de tous les joueurs
      */
     private static void afficherScores() {
-        System.out.println("\n📊 SCORES:");
+        System.out.println("\n SCORES:");
         for (Joueur joueur : jeu.getJoueurs()) {
             String marqueur = joueur == jeu.getJoueurCourant() ? " ◄" : "";
             System.out.println("  " + joueur.getNom() + ": " + joueur.getScore() + " point(s)" + marqueur);
