@@ -138,11 +138,12 @@ public class Main {
             }
         }
         
+        // ---- Cartes du joueur courant ----
         for (int i = 0; i < mainJoueur.size(); i++) {
             Carte carte = mainJoueur.get(i);
-            String affichage = carte.estVisible() ?
-                "[" + carte.getType().getDescription() + " (" + carte.getValeur() + ")]" :
-                "[?????]";
+
+            // Le joueur courant voit ses cartes !
+            String affichage = "[" + carte.getType().getDescription() + " (" + carte.getValeur() + ")]";
 
             boolean jouable = (i == premiereNonRetournee || i == derniereNonRetournee);
             String marqueur = jouable ? " ◄ JOUABLE" : " (bloquée)";
@@ -152,6 +153,7 @@ public class Main {
             ordre.add(carte);
             index++;
         }
+
 
         // Afficher les cartes des autres joueurs
         for (Joueur joueur : tousJoueurs) {
