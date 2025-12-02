@@ -54,7 +54,7 @@ public class Jeu {
         }
         
         // Vérifier si on peut retourner cette carte
-        if (!plateau.peutRetourner(carte, joueurs)) { // Modification: on n'a plus besoin du joueurActif dans Plateau.peutRetourner
+        if (!plateau.peutRetourner(carte, joueurs)) {
             return "Vous ne pouvez retourner que la première ou dernière carte d'une main, ou n'importe quelle carte du centre!";
         }
         
@@ -87,29 +87,31 @@ public class Jeu {
                 TypeCarte typeTrio = cartesRetournees.get(0).getType(); 
 
                 plateau.retirerTrio(cartesRetournees, joueurs);
-                joueurCourant.incrementerScore();
                 
                 // AJOUTER le trio au joueur courant
-                Trio trio = new Trio(joueurCourant);
+                Trio trio = new Trio(typeTrio);
                 for (Carte c : cartesRetournees) {
                     trio.ajouterCarte(c);
                 }
-                joueurCourant.ajouterTrio(trio); // MODIFICATION CLÉ
+                joueurCourant.ajouterTrio(trio);
                 
                 cartesRetournees.clear();
 
                 // Vérification spéciale pour le Type 7
                 if (typeTrio == TypeCarte.TYPE7) {
-                     return "🎉 TRIO SPÉCIAL DE TYPE 7 TROUVÉ! " + joueurCourant.getNom() + " marque 1 point et GAGNE LA PARTIE!";
+                     return "🎉 TRIO SPÉCIAL DE TYPE 7 TROUVÉ! " + joueurCourant.getNom() + 
+                            " a trouvé le trio " + typeTrio.getDescription() + " et GAGNE LA PARTIE!";
                 }
 
                 // Vérification pour les 3 trios
-                if (joueurCourant.getTriosGagnes().size() >= 3) { // MODIFICATION CLÉ
-                    return "🏆 TROIS TRIOS! " + joueurCourant.getNom() + " marque 1 point et GAGNE LA PARTIE!";
+                if (joueurCourant.getTriosGagnes().size() >= 3) {
+                    return "🏆 TROIS TRIOS! " + joueurCourant.getNom() + 
+                           " a trouvé 3 trios (" + joueurCourant.getDescriptionTrios() + ") et GAGNE LA PARTIE!";
                 }
 
                 // Le joueur rejoue
-                return "🎉 TRIO TROUVÉ! " + joueurCourant.getNom() + " marque 1 point et rejoue!";
+                return "🎉 TRIO TROUVÉ! " + joueurCourant.getNom() + 
+                       " a trouvé le trio " + typeTrio.getDescription() + " et rejoue!";
             } else {
                 String msg = "❌ Ce n'est pas un trio!";
                 cacherCartesRetournees();

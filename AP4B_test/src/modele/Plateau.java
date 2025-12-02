@@ -9,11 +9,9 @@ import java.util.List;
  */
 public class Plateau {
     private List<Carte> cartesCentre;   // cartes disponibles au centre
-    // private List<Trio> triosFormes; // RETIRÉ
     
     public Plateau() {
         this.cartesCentre = new ArrayList<>();
-        // this.triosFormes = new ArrayList<>(); // RETIRÉ
     }
 
     /**
@@ -99,7 +97,10 @@ public class Plateau {
     }
 
     /**
-     * Vérifie si une carte peut être retournée selon les règles
+     * Vérifie si une carte peut être retournée selon les règles :
+     * - N'importe quelle carte du centre (non retournée)
+     * - La première carte NON RETOURNÉE de la main
+     * - La dernière carte NON RETOURNÉE de la main
      */
     public boolean peutRetourner(Carte carte, List<Joueur> tousJoueurs) {
         if (carte == null || carte.estVisible()) {
@@ -119,7 +120,27 @@ public class Plateau {
             }
             
             int index = main.indexOf(carte);
-            return index == 0 || index == main.size() - 1;
+            
+            // Trouver la première carte NON RETOURNÉE
+            int premiereNonRetournee = -1;
+            for (int i = 0; i < main.size(); i++) {
+                if (!main.get(i).estVisible()) {
+                    premiereNonRetournee = i;
+                    break;
+                }
+            }
+            
+            // Trouver la dernière carte NON RETOURNÉE
+            int derniereNonRetournee = -1;
+            for (int i = main.size() - 1; i >= 0; i--) {
+                if (!main.get(i).estVisible()) {
+                    derniereNonRetournee = i;
+                    break;
+                }
+            }
+            
+            // La carte est jouable si c'est la première OU la dernière non retournée
+            return index == premiereNonRetournee || index == derniereNonRetournee;
         }
 
         return false;
@@ -162,8 +183,6 @@ public class Plateau {
     public List<Carte> getCartesCentre() {
         return new ArrayList<>(cartesCentre);
     }
-
-    // REMOVAL: getTriosFormes et ajouterTrio sont maintenant dans Jeu.java (via Joueur.java)
     
     @Override
     public String toString() {

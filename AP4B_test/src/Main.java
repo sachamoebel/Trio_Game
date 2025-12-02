@@ -121,17 +121,30 @@ public class Main {
         Joueur joueurActif = jeu.getJoueurCourant();
         List<Joueur> tousJoueurs = jeu.getJoueurs();
         
-        System.out.println("\n VOS CARTES:");
+        System.out.println("\n🃏 VOS CARTES:");
         List<Carte> ordre = new ArrayList<>();
         int index = 1;
         List<Carte> mainJoueur = joueurActif.getMain();
+        
+        // Trouver première et dernière carte NON RETOURNÉE
+        int premiereNonRetournee = -1;
+        int derniereNonRetournee = -1;
+        for (int i = 0; i < mainJoueur.size(); i++) {
+            if (!mainJoueur.get(i).estVisible()) {
+                if (premiereNonRetournee == -1) {
+                    premiereNonRetournee = i;
+                }
+                derniereNonRetournee = i;
+            }
+        }
+        
         for (int i = 0; i < mainJoueur.size(); i++) {
             Carte carte = mainJoueur.get(i);
             String affichage = carte.estVisible() ?
                 "[" + carte.getType().getDescription() + " (" + carte.getValeur() + ")]" :
                 "[?????]";
 
-            boolean jouable = (i == 0 || i == mainJoueur.size() - 1);
+            boolean jouable = (i == premiereNonRetournee || i == derniereNonRetournee);
             String marqueur = jouable ? " ◄ JOUABLE" : " (bloquée)";
 
             System.out.println("  " + index + ". " + affichage + marqueur);
@@ -140,19 +153,31 @@ public class Main {
             index++;
         }
 
-        
         // Afficher les cartes des autres joueurs
         for (Joueur joueur : tousJoueurs) {
             if (joueur != joueurActif) {
                 System.out.println("\n👤 CARTES DE " + joueur.getNom().toUpperCase() + ":");
                 List<Carte> mainAdverse = joueur.getMain();
+                
+                // Trouver première et dernière carte NON RETOURNÉE
+                int premiereNonRetourneeAdv = -1;
+                int derniereNonRetourneeAdv = -1;
+                for (int i = 0; i < mainAdverse.size(); i++) {
+                    if (!mainAdverse.get(i).estVisible()) {
+                        if (premiereNonRetourneeAdv == -1) {
+                            premiereNonRetourneeAdv = i;
+                        }
+                        derniereNonRetourneeAdv = i;
+                    }
+                }
+                
                 for (int i = 0; i < mainAdverse.size(); i++) {
                     Carte carte = mainAdverse.get(i);
                     String affichage = carte.estVisible() ?
                         "[" + carte.getType().getDescription() + " (" + carte.getValeur() + ")]" :
                         "[?????]";
 
-                    boolean jouable = (i == 0 || i == mainAdverse.size() - 1);
+                    boolean jouable = (i == premiereNonRetourneeAdv || i == derniereNonRetourneeAdv);
                     String marqueur = jouable ? " ◄ JOUABLE" : " (bloquée)";
 
                     System.out.println("  " + index + ". " + affichage + marqueur);
@@ -178,13 +203,20 @@ public class Main {
     }
     
     /**
-     * Affiche les scores de tous les joueurs
+     * Affiche les scores de tous les joueurs avec détails des trios
      */
     private static void afficherScores() {
-        System.out.println("\n SCORES:");
+        System.out.println("\n📊 SCORES:");
         for (Joueur joueur : jeu.getJoueurs()) {
             String marqueur = joueur == jeu.getJoueurCourant() ? " ◄" : "";
-            System.out.println("  " + joueur.getNom() + ": " + joueur.getScore() + " point(s)" + marqueur);
+            System.out.print("  " + joueur.getNom() + ": " + joueur.getScore() + " trio(s)");
+            
+            // Afficher les détails des trios
+            if (joueur.getScore() > 0) {
+                System.out.print(" [" + joueur.getDescriptionTrios() + "]");
+            }
+            
+            System.out.println(marqueur);
         }
     }
     
@@ -196,11 +228,22 @@ public class Main {
         System.out.println("           🎉 PARTIE TERMINÉE! 🎉");
         System.out.println("=".repeat(50));
         
-        afficherScores();
+        System.out.println("\n📊 SCORES FINAUX:");
+        for (Joueur joueur : jeu.getJoueurs()) {
+            System.out.println("\n  " + joueur.getNom() + ": " + joueur.getScore() + " trio(s)");
+            if (joueur.getScore() > 0) {
+                System.out.println("    Trios trouvés:");
+                int num = 1;
+                for (Trio trio : joueur.getTriosGagnes()) {
+                    System.out.println("      " + num + ". " + trio.getType().getDescription());
+                    num++;
+                }
+            }
+        }
         
         Joueur gagnant = jeu.obtenirGagnant();
         System.out.println("\n🏆 GAGNANT: " + gagnant.getNom() + 
-                          " avec " + gagnant.getScore() + " point(s)!");
+                          " avec " + gagnant.getScore() + " trio(s)!");
         
         System.out.println("\n" + "=".repeat(50));
     }

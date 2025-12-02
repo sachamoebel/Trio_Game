@@ -2,42 +2,42 @@ package modele;
 
 import java.util.ArrayList;
 import java.util.List;
-// ==================== FICHIER: Trio.java ====================
 
 /**
  * Classe représentant un trio de trois cartes identiques
  */
 public class Trio {
-    private List<Carte> cartes;
-    private Joueur joueurProprietaire;
     private TypeCarte type;
+    private List<Carte> cartes;
     
     /**
-     * Constructeur de la classe Trio
+     * Constructeur avec le type de carte du trio
+     * @param type Le type des cartes formant ce trio
      */
-    public Trio() {
+    public Trio(TypeCarte type) {
+        this.type = type;
         this.cartes = new ArrayList<>();
-    }
-    
-    /**
-     * Constructeur avec joueur propriétaire
-     */
-    public Trio(Joueur joueur) {
-        this();
-        this.joueurProprietaire = joueur;
     }
     
     /**
      * Ajoute une carte au trio
      * @param carte La carte à ajouter
+     * @throws IllegalArgumentException si la carte n'est pas du bon type ou si le trio est déjà complet
      */
     public void ajouterCarte(Carte carte) {
-        if (carte != null && cartes.size() < 3) {
-            cartes.add(carte);
-            if (type == null) {
-                type = carte.getType();
-            }
+        if (carte == null) {
+            throw new IllegalArgumentException("La carte ne peut pas être nulle");
         }
+        
+        if (!carte.getType().equals(this.type)) {
+            throw new IllegalArgumentException("La carte doit être du type " + this.type.getDescription());
+        }
+        
+        if (cartes.size() >= 3) {
+            throw new IllegalStateException("Le trio est déjà complet (3 cartes)");
+        }
+        
+        this.cartes.add(carte);
     }
     
     /**
@@ -49,41 +49,47 @@ public class Trio {
     }
     
     /**
-     * Vérifie si le trio est valide (3 cartes identiques)
-     * @return true si les 3 cartes sont identiques
+     * Obtient le type du trio
+     * @return Le TypeCarte de ce trio
      */
-    public boolean est_trio_valide() {
-        if (!estComplet()) {
-            return false;
-        }
-        Carte premiere = cartes.get(0);
-        return premiere.equals(cartes.get(1)) && premiere.equals(cartes.get(2));
-    }
-    
-    // ========== GETTERS ==========
-    
-    public List<Carte> getCartes() {
-        return new ArrayList<>(cartes);
-    }
-    
-    public Joueur getJoueurProprietaire() {
-        return joueurProprietaire;
-    }
-    
     public TypeCarte getType() {
         return type;
     }
     
-    public void setJoueurProprietaire(Joueur joueur) {
-        this.joueurProprietaire = joueur;
+    /**
+     * Obtient les cartes du trio
+     * @return Une copie de la liste des cartes
+     */
+    public List<Carte> getCartes() {
+        return new ArrayList<>(cartes);
+    }
+    
+    /**
+     * Obtient le nombre de cartes dans le trio
+     * @return Le nombre de cartes (0 à 3)
+     */
+    public int getNombreCartes() {
+        return cartes.size();
     }
     
     @Override
     public String toString() {
         return "Trio{" +
-                "type=" + type +
-                ", cartes=" + cartes.size() +
-                ", propriétaire=" + (joueurProprietaire != null ? joueurProprietaire.getNom() : "aucun") +
+                "type=" + type.getDescription() +
+                ", cartes=" + cartes.size() + "/3" +
                 '}';
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Trio trio = (Trio) o;
+        return type == trio.type;
+    }
+    
+    @Override
+    public int hashCode() {
+        return type.hashCode();
     }
 }

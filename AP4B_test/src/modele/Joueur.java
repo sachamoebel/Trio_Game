@@ -9,9 +9,8 @@ import java.util.Comparator;
  */
 public class Joueur {
     private String nom;
-    private int score;
     private List<Carte> main;
-    private List<Trio> triosGagnes; // NOUVEAU : Liste des trios formés par ce joueur
+    private List<Trio> triosGagnes; // Liste des trios formés par ce joueur
     
     /**
      * Constructeur de la classe Joueur
@@ -19,16 +18,16 @@ public class Joueur {
      */
     public Joueur(String nom) {
         this.nom = nom;
-        this.score = 0;
         this.main = new ArrayList<>();
-        this.triosGagnes = new ArrayList<>(); // Initialisation
+        this.triosGagnes = new ArrayList<>();
     }
     
     /**
-     * Incrémente le score du joueur de 1 point
+     * Obtient le score du joueur (nombre de trios gagnés)
+     * @return Le nombre de trios gagnés
      */
-    public void incrementerScore() {
-        this.score++;
+    public int getScore() {
+        return triosGagnes.size();
     }
     
     /**
@@ -40,7 +39,7 @@ public class Joueur {
             this.main.add(carte);
         }
     }
-
+    
     /**
      * Ajoute un trio gagné par ce joueur.
      * @param trio Le trio à ajouter.
@@ -50,7 +49,7 @@ public class Joueur {
             this.triosGagnes.add(trio);
         }
     }
-
+    
     /**
      * Trie la main du joueur par la valeur du TypeCarte (croissant).
      */
@@ -75,20 +74,37 @@ public class Joueur {
         return this.main.size();
     }
     
+    /**
+     * Obtient une description détaillée des trios gagnés
+     * @return String décrivant tous les trios
+     */
+    public String getDescriptionTrios() {
+        if (triosGagnes.isEmpty()) {
+            return "Aucun trio";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < triosGagnes.size(); i++) {
+            Trio trio = triosGagnes.get(i);
+            sb.append("Trio ").append(i + 1).append(": ")
+              .append(trio.getType().getDescription());
+            if (i < triosGagnes.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
+    
     // ========== GETTERS ET SETTERS ==========
     
     public String getNom() {
         return nom;
     }
     
-    public int getScore() {
-        return score;
-    }
-    
     public List<Carte> getMain() {
         return new ArrayList<>(main); 
     }
-
+    
     public List<Trio> getTriosGagnes() {
         return new ArrayList<>(triosGagnes);
     }
@@ -97,29 +113,24 @@ public class Joueur {
         this.nom = nom;
     }
     
-    public void setScore(int score) {
-        this.score = score;
-    }
-    
     @Override
     public String toString() {
         return "Joueur{" +
                 "nom='" + nom + '\'' +
-                ", score=" + score +
+                ", score=" + getScore() +
                 ", cartes=" + main.size() +
-                ", trios=" + triosGagnes.size() +
+                ", trios=" + getDescriptionTrios() +
                 '}';
     }
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Joueur joueur = (Joueur) o;
-        // On compare par nom
         return nom.equals(joueur.nom); 
     }
-
+    
     @Override
     public int hashCode() {
         return nom.hashCode();
