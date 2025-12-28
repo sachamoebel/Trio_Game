@@ -290,12 +290,56 @@ public class TrioGUI extends JFrame {
         
         rafraichirInterface();
         
+        // Si on a retourné 2 cartes qui ne correspondent pas OU 3 cartes qui ne forment pas un trio
+        // On attend 2 secondes avant de les cacher et changer de joueur
+        if (resultat.contains("ne correspondent pas") || resultat.contains("n'est pas un trio")) {
+            // Désactiver tous les boutons pendant l'attente
+            desactiverTousBoutons();
+            
+            Timer timer = new Timer(2000, e -> {
+                jeu.gererEchec(); // Cache les cartes ET change de joueur
+                rafraichirInterface();
+                reactiverBoutons();
+            });
+            timer.setRepeats(false);
+            timer.start();
+        }
+        
         // Vérifier fin de partie
         if (jeu.verifierFinPartie()) {
             Timer timer = new Timer(500, e -> afficherFinPartie());
             timer.setRepeats(false);
             timer.start();
         }
+    }
+    
+    /**
+     * Désactive tous les boutons de cartes
+     */
+    private void desactiverTousBoutons() {
+        desactiverBoutonsPanel(panelJoueurs);
+        desactiverBoutonsPanel(panelCentre);
+    }
+    
+    /**
+     * Désactive récursivement tous les boutons d'un panel
+     */
+    private void desactiverBoutonsPanel(Container container) {
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JButton) {
+                comp.setEnabled(false);
+            } else if (comp instanceof Container) {
+                desactiverBoutonsPanel((Container) comp);
+            }
+        }
+    }
+    
+    /**
+     * Réactive les boutons (en rafraîchissant l'interface)
+     */
+    private void reactiverBoutons() {
+        // Le rafraîchissement de l'interface réactivera automatiquement les bons boutons
+        rafraichirInterface();
     }
     
     /**

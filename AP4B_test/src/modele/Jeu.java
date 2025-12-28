@@ -69,12 +69,12 @@ public class Jeu {
         if (cartesRetournees.size() == 2) {
             // Vérifier si les 2 premières cartes sont identiques
             if (!cartesRetournees.get(0).equals(cartesRetournees.get(1))) {
-                String msg = "Les deux cartes ne correspondent pas!";
-                cacherCartesRetournees();
-                changerJoueur();
+                String msg = "❌ Les deux cartes ne correspondent pas!";
+                // NE PAS cacher immédiatement - l'interface graphique le fera après un délai
+                // Pour la version console, on cache après que l'utilisateur appuie sur Entrée
                 return msg;
             }
-            return "Deux cartes identiques! Cherchez la troisième...";
+            return "✅ Deux cartes identiques! Cherchez la troisième...";
         }
         
         if (cartesRetournees.size() == 3) {
@@ -114,8 +114,7 @@ public class Jeu {
                        " a trouvé le trio " + typeTrio.getDescription() + " et rejoue!";
             } else {
                 String msg = "❌ Ce n'est pas un trio!";
-                cacherCartesRetournees();
-                changerJoueur();
+                // NE PAS cacher immédiatement - l'interface graphique le fera après un délai
                 return msg;
             }
         }
@@ -124,13 +123,21 @@ public class Jeu {
     }
     
     /**
-     * Cache toutes les cartes retournées
+     * Cache toutes les cartes retournées (appelé après un échec)
      */
-    private void cacherCartesRetournees() {
+    public void cacherCartesRetournees() {
         for (Carte carte : cartesRetournees) {
             carte.cacher();
         }
         cartesRetournees.clear();
+    }
+    
+    /**
+     * Cache les cartes retournées ET change de joueur (pour les échecs)
+     */
+    public void gererEchec() {
+        cacherCartesRetournees();
+        changerJoueur();
     }
     
     /**

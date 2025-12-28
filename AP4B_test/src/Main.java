@@ -61,7 +61,7 @@ public class Main {
             try {
                 nbJoueurs = Integer.parseInt(scanner.nextLine());
                 if (nbJoueurs < 3 || nbJoueurs > 6) {
-                    System.out.println("⚠ Veuillez entrer 3 et 6 joueurs.");
+                    System.out.println("⚠ Veuillez entrer entre 3 et 6 joueurs.");
                     return demanderNombreJoueurs();
                 }
             } catch (NumberFormatException e) {
@@ -93,17 +93,19 @@ public class Main {
                 String resultat = jeu.jouerTour(carteChoisie);
                 System.out.println("\n>>> " + resultat);
                 
-                // Pause pour que le joueur voie les cartes
+                // Afficher les cartes retournées
                 if (jeu.getCartesRetournees().size() > 0) {
                     System.out.println("\nCartes retournées:");
                     for (Carte c : jeu.getCartesRetournees()) {
                         System.out.println("  - " + c.getType().getDescription());
                     }
                     
-                    if (jeu.getCartesRetournees().size() == 2 && 
-                        !jeu.getCartesRetournees().get(0).equals(jeu.getCartesRetournees().get(1))) {
+                    // Si échec (2 ou 3 cartes différentes), attendre que l'utilisateur appuie sur Entrée
+                    if (resultat.contains("ne correspondent pas") || resultat.contains("n'est pas un trio")) {
                         System.out.println("\nAppuyez sur Entrée pour continuer...");
                         scanner.nextLine();
+                        // Maintenant on cache les cartes et on change de joueur
+                        jeu.gererEchec();
                     }
                 }
             } else {
