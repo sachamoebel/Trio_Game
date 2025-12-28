@@ -1,11 +1,13 @@
 import modele.*;
+
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 /**
  * Classe principale pour jouer au jeu Trio en mode console
- */
+
 public class Main {
     
     private static Scanner scanner = new Scanner(System.in);
@@ -40,7 +42,7 @@ public class Main {
     
     /**
      * Affiche le message de bienvenue
-     */
+
     private static void afficherBienvenue() {
         System.out.println("╔═══════════════════════════════════════╗");
         System.out.println("║       BIENVENUE AU JEU TRIO UTBM      ║");
@@ -53,7 +55,7 @@ public class Main {
     
     /**
      * Demande le nombre de joueurs
-     */
+
     private static int demanderNombreJoueurs() {
         int nbJoueurs = 0;
         while (nbJoueurs < 3 || nbJoueurs > 6) {
@@ -73,7 +75,7 @@ public class Main {
     
     /**
      * Joue un tour complet pour le joueur courant
-     */
+
     private static void jouerUnTour() {
         System.out.println("\n" + "=".repeat(50));
         System.out.println("Tour de: " + jeu.getJoueurCourant().getNom());
@@ -118,7 +120,7 @@ public class Main {
     
     /**
      * Affiche toutes les cartes disponibles
-     */
+
     private static void afficherCartes() {
         Joueur joueurActif = jeu.getJoueurCourant();
         List<Joueur> tousJoueurs = jeu.getJoueurs();
@@ -208,7 +210,7 @@ public class Main {
     
     /**
      * Affiche les scores de tous les joueurs avec détails des trios
-     */
+
     private static void afficherScores() {
         System.out.println("\n📊 SCORES:");
         for (Joueur joueur : jeu.getJoueurs()) {
@@ -226,7 +228,7 @@ public class Main {
     
     /**
      * Affiche le résultat final de la partie
-     */
+
     private static void afficherResultatFinal() {
         System.out.println("\n" + "=".repeat(50));
         System.out.println("           🎉 PARTIE TERMINÉE! 🎉");
@@ -250,5 +252,14 @@ public class Main {
                           " avec " + gagnant.getScore() + " trio(s)!");
         
         System.out.println("\n" + "=".repeat(50));
+    }
+}*/
+
+import GUI.*;
+
+public class Main {
+    public static void main(String[] args) {
+        // Lancement de l'interface dans le Thread graphique
+        SwingUtilities.invokeLater(() -> new ClientFrame());
     }
 }

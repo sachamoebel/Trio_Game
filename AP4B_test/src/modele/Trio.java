@@ -1,12 +1,13 @@
 package modele;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Classe représentant un trio de trois cartes identiques
  */
-public class Trio {
+public class Trio implements Serializable {
     private TypeCarte type;
     private List<Carte> cartes;
     

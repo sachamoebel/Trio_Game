@@ -1,11 +1,13 @@
 package modele;
 
+import java.io.Serializable;
+
 /**
  * Classe représentant une carte du jeu Trio
  */
-public class Carte {
+public class Carte implements Serializable {
     private TypeCarte type;
-    private boolean visible;
+    boolean visible;
     
     /**
      * Constructeur de la classe Carte

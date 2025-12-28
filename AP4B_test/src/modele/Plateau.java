@@ -1,5 +1,6 @@
 package modele;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,11 +8,13 @@ import java.util.List;
 /**
  * Classe représentant le plateau de jeu avec toutes les cartes encore en jeu.
  */
-public class Plateau {
-    private List<Carte> cartesCentre;   // cartes disponibles au centre
-    
-    public Plateau() {
-        this.cartesCentre = new ArrayList<>();
+public class Plateau implements Serializable {
+    ZoneCarte zoneCentre = new ZoneCarte();
+    List<ZoneJoueur> zonesJoueur =  new ArrayList<>();
+
+    public ZoneJoueur getZone(Joueur joueur) {
+        for (ZoneJoueur z : zonesJoueur) if (z.joueur == joueur) return z;
+        return null;
     }
 
     /**
@@ -25,13 +28,6 @@ public class Plateau {
             }
         }
         return jeu;
-    }
-
-    /**
-     * Initialise les cartes (utile si tu veux juste remplir le plateau sans distribuer)
-     */
-    public void initialiserCartes() {
-        // Aucune action spécifique n'est nécessaire ici, la distribution est faite par distribuerCartes
     }
 
     /**
@@ -71,28 +67,22 @@ public class Plateau {
         }
 
         // Distribution aux joueurs
-        for (int round = 0; round < cartesParJoueur; round++) {
-            for (Joueur joueur : joueurs) {
+        for (ZoneJoueur z : zonesJoueur) {
+            for (int i = 0; i < cartesParJoueur; i++) {
                 if (pioche.isEmpty()) break;
                 Carte c = pioche.remove(0);
-                joueur.ajouterCarte(c);
-            }
-        }
-
-        // Tri et initialisation des cartes face cachée
-        for (Joueur joueur : joueurs) {
-            joueur.trierMain(); 
-            for(Carte c : joueur.getMain()) {
+                z.cartes.add(c);
                 c.cacher();
             }
+            z.trierMain();
         }
 
         // Cartes au centre
-        cartesCentre.clear();
+        zoneCentre.cartes.clear();
         for (int i = 0; i < cartesAuCentre && !pioche.isEmpty(); i++) {
-            Carte c = pioche.remove(0);
+            Carte c = pioche.removeFirst();
             c.cacher(); // Cartes du centre face cachée au départ
-            cartesCentre.add(c);
+            zoneCentre.cartes.add(c);
         }
     }
 
@@ -102,13 +92,14 @@ public class Plateau {
      * - La première carte NON RETOURNÉE de la main
      * - La dernière carte NON RETOURNÉE de la main
      */
+    /*
     public boolean peutRetourner(Carte carte, List<Joueur> tousJoueurs) {
         if (carte == null || carte.estVisible()) {
             return false;
         }
 
         // Vérifier le centre
-        if (cartesCentre.contains(carte)) {
+        if (zoneCentre.cartes.contains(carte)) {
             return true;
         }
 
@@ -144,7 +135,7 @@ public class Plateau {
         }
 
         return false;
-    }
+    }*/
 
     public boolean retournerCarte(Carte carte) {
         if (carte != null && !carte.estVisible()) {
@@ -162,10 +153,11 @@ public class Plateau {
     /**
      * Retire les cartes du trio des mains des joueurs et/ou du centre.
      */
+    /*
     public void retirerTrio(List<Carte> trio, List<Joueur> joueurs) {
         if (trio == null || trio.size() != 3) return;
         for (Carte carte : trio) {
-            cartesCentre.remove(carte);
+            zoneCentre.cartes.remove(carte);
             if (joueurs != null) {
                 for (Joueur joueur : joueurs) {
                     joueur.retirerCarte(carte);
@@ -173,19 +165,23 @@ public class Plateau {
             }
         }
     }
-
+*/
     // --- Getters ---
 
     public boolean aDesCartes() {
-        return !cartesCentre.isEmpty();
+        return !zoneCentre.cartes.isEmpty();
     }
 
     public List<Carte> getCartesCentre() {
-        return new ArrayList<>(cartesCentre);
+        return new ArrayList<>(zoneCentre.cartes);
+    }
+
+    public ZoneCarte getZoneCentre() {
+        return zoneCentre;
     }
     
     @Override
     public String toString() {
-        return "Plateau{ cartes au centre=" + cartesCentre.size() + " }";
+        return "Plateau{ cartes au centre=" + zoneCentre.cartes.size() + " }";
     }
 }
