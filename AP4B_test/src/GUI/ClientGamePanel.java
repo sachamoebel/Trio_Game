@@ -130,7 +130,7 @@ public class ClientGamePanel extends JPanel {
         // Contrainte pour que toutes les zones aient la même hauteur
         pPanel.setPreferredSize(new Dimension(0, HAUTEUR_ZONE));
         pPanel.setMinimumSize(new Dimension(0, HAUTEUR_ZONE));
-        pPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HAUTEUR_ZONE + 50));
+        pPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HAUTEUR_ZONE));
 
         pPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 

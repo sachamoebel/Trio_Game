@@ -10,9 +10,9 @@ public class CenterCardPanel extends JPanel {
 
     public CenterCardPanel(ClientFrame frame) {
         this.frame = frame;
-        setPreferredSize(new Dimension(0, 300));
+        setPreferredSize(new Dimension(0, 160));
         setBorder(BorderFactory.createTitledBorder("Zone Centrale (Cartes restantes)"));
-        setBackground(new Color(0, 89, 0, 77));
+        setBackground(new Color(215, 220, 255));
     }
 
     public void updateCards(ZoneCarte zone, boolean isMyTurn) {
