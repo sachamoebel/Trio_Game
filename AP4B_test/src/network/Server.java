@@ -41,7 +41,7 @@ public class Server {
                 clients.add(h);
                 new Thread(h).start();
 
-                broadcast("Joueur " + id + " connecté (" + clients.size() + "/" + nbJoueursAttendus + ")");
+                broadcast("Joueur " + partie.getJoueurById(id) + " connecté (" + clients.size() + "/" + nbJoueursAttendus + ")");
                 id++;
             }
 
@@ -98,7 +98,7 @@ public class Server {
 
     public void removeClient(ClientHandler h) {
         clients.remove(h);
-        broadcast("Joueur " + h.id + " a quitté la partie.");
+        broadcast("Joueur " + partie.getJoueurById(h.id) + " a quitté la partie.");
     }
 
     private void sendStateToAll() {

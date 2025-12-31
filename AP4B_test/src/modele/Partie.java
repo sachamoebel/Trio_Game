@@ -180,7 +180,6 @@ public class Partie implements Serializable {
 
             ZoneJoueur zoneGagnant = plateau.getZone(joueurCourant);
             zoneGagnant.triosGagnes.add(new Trio(c1.getType()));
-            System.out.println("Erreur1");
             // Mise à jour du score numérique
             scores.put(joueurCourant.getId(), scores.get(joueurCourant.getId()) + 1);
 
