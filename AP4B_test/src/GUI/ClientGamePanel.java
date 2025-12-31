@@ -37,11 +37,24 @@ public class ClientGamePanel extends JPanel {
         textAreaScores.setFont(new Font("Monospaced", Font.PLAIN, 12));
         textAreaScores.setBackground(new Color(245, 245, 245));
 
+        JButton btnRegles = new JButton("AFFICHER LES RÈGLES"); // Petit clin d'œil à l'image
+        btnRegles.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnRegles.setBackground(new Color(50, 50, 50)); // Fond noir comme la boite
+        btnRegles.setForeground(Color.WHITE);
+        btnRegles.setFont(new Font("Arial", Font.BOLD, 12));
+        btnRegles.setFocusPainted(false);
+        btnRegles.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        btnRegles.addActionListener(e -> afficherRegles());
+
         JScrollPane scrollScores = new JScrollPane(textAreaScores);
         scrollScores.setBorder(BorderFactory.createTitledBorder("Scores"));
         scrollScores.setOpaque(false);
         scrollScores.getViewport().setOpaque(false);
 
+        scoresPanel.add(Box.createVerticalStrut(10));
+        scoresPanel.add(btnRegles);
+        scoresPanel.add(Box.createVerticalStrut(10));
         scoresPanel.add(scrollScores);
         add(scoresPanel, BorderLayout.EAST);
 
@@ -130,7 +143,6 @@ public class ClientGamePanel extends JPanel {
         // Contrainte pour que toutes les zones aient la même hauteur
         pPanel.setPreferredSize(new Dimension(0, HAUTEUR_ZONE));
         pPanel.setMinimumSize(new Dimension(0, HAUTEUR_ZONE));
-        pPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HAUTEUR_ZONE));
 
         pPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -155,5 +167,46 @@ public class ClientGamePanel extends JPanel {
         }
 
         textAreaScores.setText(sb.toString());
+    }
+
+    private void afficherRegles() {
+        // Utilisation de HTML pour styliser comme sur la boîte de jeu
+        String htmlContent = "<html><body style='width: 350px; font-family: sans-serif;'>" +
+
+                // En-tête
+                "<h2 style='text-align: center; color: #E6007E;'>RÈGLES DU JEU</h2>" +
+                "<p style='text-align: center;'><i>Qui sera le plus rusé pour déduire quels numéros se cachent sous les cartes ?</i></p>" +
+                "<hr>" +
+
+                // Étape 1 (Bleu turquoise sur la boite)
+                "<h3 style='color: #008080;'>&#10102; DÉVOILEZ 2 CARTES NUMÉRO :</h3>" +
+                "<ul>" +
+                "<li>Sur la table (au centre),</li>" +
+                "<li><b>OU</b> dans la main d'un joueur...</li>" +
+                "</ul>" +
+                "<p style='margin-left: 20px; color: #D35400;'><b>MAIS ATTENTION :</b><br>" +
+                "Seulement le plus <b>PETIT</b> numéro ou le plus <b>GRAND</b> !</p>" +
+
+                // Étape 2 (Orange sur la boite)
+                "<h3 style='color: #E67E22;'>&#10103; REJOUEZ !</h3>" +
+                "<p>Si les 2 cartes dévoilées sont <b>identiques</b>, vous continuez votre tour !</p>" +
+
+                // Étape 3 (Vert sur la boite)
+                "<h3 style='color: #27AE60;'>&#10104; GAGNEZ LE TRIO</h3>" +
+                "<p>Trouvez les <b>3 cartes identiques</b> et gagnez ce trio !</p>" +
+
+                "<hr>" +
+
+                // Condition de victoire
+                "<p style='text-align: center; background-color: #FFFFE0; padding: 5px; border: 1px solid orange;'>" +
+                "<b>VICTOIRE :</b><br>" +
+                "Le premier à obtenir <b>3 Trios</b><br>(ou le Trio de 7) gagne la partie !" +
+                "</p>" +
+
+                "</body></html>";
+
+        // Affichage dans une boîte de dialogue propre
+        JLabel label = new JLabel(htmlContent);
+        JOptionPane.showMessageDialog(frame, label, "Règles Officielles Trio", JOptionPane.PLAIN_MESSAGE);
     }
 }
