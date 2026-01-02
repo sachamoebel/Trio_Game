@@ -1,6 +1,7 @@
 package GUI;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -8,117 +9,131 @@ import java.util.List;
 
 import modele.*;
 
-public class PlayersCardPanel extends JPanel {
+public class PlayersCardPanel extends RoundedPanel {
+    private final ClientFrame frame;
+
     public PlayersCardPanel(ZoneJoueur zone, int myId, int currentTurn, ClientFrame frame) {
-        setLayout(new BorderLayout());
+        super(40);
+        this.frame = frame;
+
+        initPanelStyle(zone.getJoueur().getId() == currentTurn);
+
         Joueur j = zone.getJoueur();
         boolean isMe = (j.getId() == myId);
-        boolean isActive = (j.getId() == currentTurn);
 
-        setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(isActive ? Color.GREEN : Color.GRAY, 2),
-                j.getNom() + (isMe ? " (Moi)" : "")
-        ));
-        setBackground(isMe ? new Color(240, 255, 240) : Color.WHITE);
+        add(createHeaderPanel(zone, j, isMe), BorderLayout.NORTH);
+        add(createCardsContainer(zone, myId, currentTurn, isMe), BorderLayout.CENTER);
+    }
 
-        // 1. Zone des trios gagnés
-        PanelTrio pnlTrios = new PanelTrio(zone.getTriosGagnes());
-        add(pnlTrios, BorderLayout.NORTH);
+    private void initPanelStyle(boolean isActive) {
+        setLayout(new BorderLayout(10, 10));
+        setBackground(isActive ? ClientFrame.ACTIVE_COLOR : ClientFrame.PANEL_COLOR);
+    }
 
-        // 2. Zone des cartes en main
+    private JPanel createHeaderPanel(ZoneJoueur zone, Joueur j, boolean isMe) {
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+
+        JLabel nameLbl = new JLabel(j.getNom() + (isMe ? " (Moi)" : ""));
+        nameLbl.setFont(new Font("Arial", Font.BOLD, 16));
+        nameLbl.setForeground(Color.WHITE);
+        nameLbl.setHorizontalAlignment(SwingConstants.LEFT);
+        nameLbl.setBorder(new EmptyBorder(10, 10, 0, 0));
+
+        headerPanel.add(nameLbl, BorderLayout.NORTH);
+        headerPanel.add(new PanelTrio(zone.getTriosGagnes()), BorderLayout.CENTER);
+
+        return headerPanel;
+    }
+
+    private JPanel createCardsContainer(ZoneJoueur zone, int myId, int currentTurn, boolean isMe) {
         JPanel cardsBox = new JPanel(new GridLayout());
         cardsBox.setOpaque(false);
 
         JPanel cardsRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+        cardsRow.setBorder(new EmptyBorder(0, 0, 5, 0));
         cardsRow.setOpaque(false);
 
         List<Carte> cartes = zone.getCartes();
-
-        // --- CORRECTION : CALCULER LES INDICES CLIQUABLES ---
-        int indexFirstHidden = -1;
-        int indexLastHidden = -1;
-
-        // Trouver le premier caché (Nouveau MIN)
-        for (int i = 0; i < cartes.size(); i++) {
-            if (!cartes.get(i).estVisible()) {
-                indexFirstHidden = i;
-                break;
-            }
-        }
-
-        // Trouver le dernier caché (Nouveau MAX)
-        for (int i = cartes.size() - 1; i >= 0; i--) {
-            if (!cartes.get(i).estVisible()) {
-                indexLastHidden = i;
-                break;
-            }
-        }
-        // ----------------------------------------------------
+        int firstHiddenIndex = findFirstHiddenIndex(cartes);
+        int lastHiddenIndex = findLastHiddenIndex(cartes);
 
         for (int i = 0; i < cartes.size(); i++) {
             Carte c = cartes.get(i);
+            boolean isInteractive = isCardInteractive(i, firstHiddenIndex, lastHiddenIndex, myId, currentTurn, c);
+            boolean isPlayableMin = (i == firstHiddenIndex);
 
-            // Une carte est "Jouable" si elle correspond aux nouveaux indices calculés
-            boolean isPlayableMin = (i == indexFirstHidden);
-            boolean isPlayableMax = (i == indexLastHidden);
-
-            // Est-elle interactive ? (Mon tour + Carte Cachée + Est une extrémité cachée)
-            boolean isInteractive = (myId == currentTurn) && !c.estVisible() && (isPlayableMin || isPlayableMax);
-
-            Color couleurCarte = (c.getType() != null) ? c.getType().getCouleur() : Color.WHITE;
-            String descriptionCarte = c.getType().getDescription();
-
-            JLabel lbl = new JLabel("", SwingConstants.CENTER);
-            lbl.setPreferredSize(new Dimension(ClientGamePanel.LARGEUR_CARTE, ClientGamePanel.HAUTEUR_CARTE));
-            lbl.setOpaque(true);
-
-            if (c.estVisible()) {
-                // CARTE RÉVÉLÉE (Déjà jouée)
-                lbl.setText(descriptionCarte);
-                lbl.setBackground(couleurCarte.darker());
-                lbl.setPreferredSize(new Dimension(ClientGamePanel.LARGEUR_CARTE + 5, ClientGamePanel.HAUTEUR_CARTE + 10));
-                lbl.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
-            } else if (isInteractive) {
-                if (isMe) {
-                    lbl.setText(descriptionCarte);
-                    lbl.setBackground(couleurCarte);
-                } else {
-                    lbl.setText("?");
-                    lbl.setBackground(new Color(255, 251, 53));
-                    lbl.setForeground(Color.WHITE);
-                }
-
-                // Bordure Bleue + Main
-                lbl.setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
-                lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-                // On détermine quelle commande envoyer (MIN ou MAX) selon l'index trouvé
-                // Note : Si il ne reste qu'une carte, elle est à la fois Min et Max, "MIN" fonctionne par défaut.
-                String commandType = isPlayableMin ? "MIN" : "MAX";
-
-                lbl.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        frame.sendAction("JOUEUR:" + j.getId() + ":" + commandType);
-                    }
-                });
-
-            } else {
-                lbl.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                if (isMe) {
-                    lbl.setText(descriptionCarte);
-                    lbl.setBackground(couleurCarte);
-                } else {
-                    lbl.setText("?");
-                    lbl.setBackground(new Color(200, 50, 50));
-                    lbl.setForeground(Color.WHITE);
-                }
-            }
-            cardsRow.add(lbl);
+            cardsRow.add(createCardLabel(c, isMe, isInteractive, isPlayableMin, zone.getJoueur().getId()));
         }
 
         cardsBox.add(cardsRow);
-        add(cardsBox, BorderLayout.CENTER);
+        return cardsBox;
+    }
+
+    private JLabel createCardLabel(Carte c, boolean isMe, boolean isInteractive, boolean isMin, int playerId) {
+        JLabel lbl = new JLabel("", SwingConstants.CENTER);
+        lbl.setOpaque(true);
+
+        applyCardStyle(lbl, c, isMe, isInteractive);
+
+        if (isInteractive) {
+            setupInteractivity(lbl, playerId, isMin);
+        } else {
+            lbl.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        }
+
+        return lbl;
+    }
+
+    private void applyCardStyle(JLabel lbl, Carte c, boolean isMe, boolean isInteractive) {
+        int width = ClientGamePanel.LARGEUR_CARTE;
+        int height = ClientGamePanel.HAUTEUR_CARTE;
+        boolean showFace = c.estVisible() || isMe;
+
+        if (showFace) {
+            if (c.estVisible()) {
+                width += 6;
+                height += 10;
+            }
+            Color bg = c.estVisible() ? c.getType().getCouleur().darker() : c.getType().getCouleur();
+            CardStyler.afficherFace(lbl, c.getType().getValeur(), c.getType().getDescription(), bg, width, height);
+        } else {
+            Color bgDos = isInteractive ? new Color(255, 251, 53) : new Color(200, 50, 50);
+            CardStyler.afficherDos(lbl, bgDos, width, height);
+        }
+
+        lbl.setPreferredSize(new Dimension(width, height));
+    }
+
+    private void setupInteractivity(JLabel lbl, int playerId, boolean isMin) {
+        lbl.setBorder(BorderFactory.createLineBorder(Color.BLUE, 5));
+        lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        String command = isMin ? "MIN" : "MAX";
+
+        lbl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                frame.sendAction("JOUEUR:" + playerId + ":" + command);
+            }
+        });
+    }
+
+    private boolean isCardInteractive(int index, int minIdx, int maxIdx, int myId, int currentTurn, Carte c) {
+        boolean isPlayable = (index == minIdx || index == maxIdx);
+        return (myId == currentTurn) && !c.estVisible() && isPlayable;
+    }
+
+    private int findFirstHiddenIndex(List<Carte> cartes) {
+        for (int i = 0; i < cartes.size(); i++) {
+            if (!cartes.get(i).estVisible()) return i;
+        }
+        return -1;
+    }
+
+    private int findLastHiddenIndex(List<Carte> cartes) {
+        for (int i = cartes.size() - 1; i >= 0; i--) {
+            if (!cartes.get(i).estVisible()) return i;
+        }
+        return -1;
     }
 }

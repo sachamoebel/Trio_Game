@@ -32,7 +32,7 @@ public class Joueur implements Serializable {
 
     @Override
     public String toString() {
-        return nom + " [id=" + id + ']';
+        return nom + " (id : " + id + ')';
     }
 
     @Override

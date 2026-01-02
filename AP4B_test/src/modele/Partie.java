@@ -201,7 +201,7 @@ public class Partie implements Serializable {
         for (Carte c : retourneesCeTour) c.cacher();
         retourneesCeTour.clear();
         changerJoueur();
-        message = "Tour du joueur " + joueurCourant.getNom();
+        message = "Tour du joueur " + joueurCourant;
     }
 
     private void retirerCartesGagnees() {
