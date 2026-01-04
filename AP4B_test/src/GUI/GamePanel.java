@@ -14,7 +14,7 @@ import modele.*;
  * Il assemble les différentes sections (en-tête, zone centrale, joueurs, scores)
  * et gère la mise à jour visuelle globale selon l'état de la partie.
  */
-public class ClientGamePanel extends JPanel {
+public class GamePanel extends JPanel {
     private final ClientFrame frame;
     private CenterCardPanel centerPanel;
     private JPanel playersGrid;
@@ -31,12 +31,12 @@ public class ClientGamePanel extends JPanel {
     static final int HAUTEUR_ZONE = 200;
 
     /**
-     * Constructeur de ClientGamePanel.
+     * Constructeur de GamePanel.
      * Initialise la disposition et crée les différentes sections de l'interface.
      *
      * @param frame La fenêtre principale parente
      */
-    public ClientGamePanel(ClientFrame frame) {
+    public GamePanel(ClientFrame frame) {
         this.frame = frame;
 
         initMainPanel();
@@ -75,7 +75,7 @@ public class ClientGamePanel extends JPanel {
 
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        headerPanel.setBorder(new EmptyBorder(20, 0, 15, 0));
+        headerPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
         headerPanel.add(lblInfo, BorderLayout.CENTER);
         headerPanel.add(btnContainer, BorderLayout.EAST);
 
@@ -151,9 +151,9 @@ public class ClientGamePanel extends JPanel {
      * @return Un JPanel contenant le plateau
      */
     private JPanel createGameSection() {
-        JPanel gameBoard = new JPanel(new BorderLayout(0, 30));
+        JPanel gameBoard = new JPanel(new BorderLayout(0, 20));
 
-        Border lineBorder = BorderFactory.createMatteBorder(30, 40, 20, 40, ClientFrame.BACKGROUND_COLOR);
+        Border lineBorder = BorderFactory.createMatteBorder(0, 30, 20, 30, ClientFrame.BACKGROUND_COLOR);
         gameBoard.setBorder(lineBorder);
         gameBoard.setBackground(ClientFrame.BACKGROUND_COLOR);
         gameBoard.setOpaque(false);

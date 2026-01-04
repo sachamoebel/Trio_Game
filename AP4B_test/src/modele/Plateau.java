@@ -7,18 +7,16 @@ import java.util.List;
 
 /**
  * Classe représentant le plateau de jeu avec toutes les cartes encore en jeu.
+ * Elle gère la génération du paquet, la distribution initiale et l'accès aux zones.
  */
 public class Plateau implements Serializable {
     ZoneCarte zoneCentre = new ZoneCarte();
     List<ZoneJoueur> zonesJoueur =  new ArrayList<>();
 
-    public ZoneJoueur getZone(Joueur joueur) {
-        for (ZoneJoueur z : zonesJoueur) if (z.joueur == joueur) return z;
-        return null;
-    }
-
     /**
-     * Génère le jeu complet : 12 types x 3 exemplaires = 36 cartes
+     * Génère le jeu complet nécessaire pour une partie : 12 types de cartes
+     * présents en 3 exemplaires chacun, soit un total de 36 cartes.
+     * @return Une liste contenant les 36 cartes initiales.
      */
     public List<Carte> genererJeuComplet() {
         List<Carte> jeu = new ArrayList<>();
@@ -31,14 +29,17 @@ public class Plateau implements Serializable {
     }
 
     /**
-     * Distribue les cartes entre les joueurs et le centre.
+     * Distribue les cartes entre les mains des joueurs et la zone centrale.
+     * Le nombre de cartes distribuées dépend du nombre de joueurs (règles officielles).
+     * @param nbJoueurs Le nombre de joueurs participant à la partie.
+     * @param joueurs La liste des objets Joueur.
+     * @throws IllegalArgumentException Si le nombre de joueurs n'est pas entre 3 et 6.
      */
     public void distribuerCartes(int nbJoueurs, List<Joueur> joueurs) {
         if (joueurs == null || joueurs.size() != nbJoueurs) {
             throw new IllegalArgumentException("La liste des joueurs doit contenir exactement " + nbJoueurs + " joueurs.");
         }
 
-        // Générer et mélanger le jeu complet (36 cartes)
         List<Carte> pioche = genererJeuComplet();
         Collections.shuffle(pioche);
 
@@ -66,7 +67,6 @@ public class Plateau implements Serializable {
                 throw new IllegalArgumentException("Nombre de joueurs non supporté (doit être entre 3 et 6) : " + nbJoueurs);
         }
 
-        // Distribution aux joueurs
         for (ZoneJoueur z : zonesJoueur) {
             for (int i = 0; i < cartesParJoueur; i++) {
                 if (pioche.isEmpty()) break;
@@ -77,109 +77,44 @@ public class Plateau implements Serializable {
             z.trierMain();
         }
 
-        // Cartes au centre
         zoneCentre.cartes.clear();
         for (int i = 0; i < cartesAuCentre && !pioche.isEmpty(); i++) {
             Carte c = pioche.removeFirst();
-            c.cacher(); // Cartes du centre face cachée au départ
+            c.cacher();
             zoneCentre.cartes.add(c);
         }
     }
 
     /**
-     * Vérifie si une carte peut être retournée selon les règles :
-     * - N'importe quelle carte du centre (non retournée)
-     * - La première carte NON RETOURNÉE de la main
-     * - La dernière carte NON RETOURNÉE de la main
+     * Retourne une copie de la liste des cartes actuellement présentes au centre.
+     * @return Une liste de cartes.
      */
-    /*
-    public boolean peutRetourner(Carte carte, List<Joueur> tousJoueurs) {
-        if (carte == null || carte.estVisible()) {
-            return false;
-        }
-
-        // Vérifier le centre
-        if (zoneCentre.cartes.contains(carte)) {
-            return true;
-        }
-
-        // Vérifier les mains des joueurs
-        for (Joueur joueur : tousJoueurs) {
-            List<Carte> main = joueur.getMain();
-            if (!main.contains(carte)) {
-                continue;
-            }
-            
-            int index = main.indexOf(carte);
-            
-            // Trouver la première carte NON RETOURNÉE
-            int premiereNonRetournee = -1;
-            for (int i = 0; i < main.size(); i++) {
-                if (!main.get(i).estVisible()) {
-                    premiereNonRetournee = i;
-                    break;
-                }
-            }
-            
-            // Trouver la dernière carte NON RETOURNÉE
-            int derniereNonRetournee = -1;
-            for (int i = main.size() - 1; i >= 0; i--) {
-                if (!main.get(i).estVisible()) {
-                    derniereNonRetournee = i;
-                    break;
-                }
-            }
-            
-            // La carte est jouable si c'est la première OU la dernière non retournée
-            return index == premiereNonRetournee || index == derniereNonRetournee;
-        }
-
-        return false;
-    }*/
-
-    public boolean retournerCarte(Carte carte) {
-        if (carte != null && !carte.estVisible()) {
-            carte.retourner();
-            return true;
-        }
-        return false;
-    }
-
-    public boolean verifierTrio(Carte c1, Carte c2, Carte c3) {
-        if (c1 == null || c2 == null || c3 == null) return false;
-        return c1.equals(c2) && c2.equals(c3);
-    }
-
-    /**
-     * Retire les cartes du trio des mains des joueurs et/ou du centre.
-     */
-    /*
-    public void retirerTrio(List<Carte> trio, List<Joueur> joueurs) {
-        if (trio == null || trio.size() != 3) return;
-        for (Carte carte : trio) {
-            zoneCentre.cartes.remove(carte);
-            if (joueurs != null) {
-                for (Joueur joueur : joueurs) {
-                    joueur.retirerCarte(carte);
-                }
-            }
-        }
-    }
-*/
-    // --- Getters ---
-
-    public boolean aDesCartes() {
-        return !zoneCentre.cartes.isEmpty();
-    }
-
     public List<Carte> getCartesCentre() {
         return new ArrayList<>(zoneCentre.cartes);
     }
 
+    /**
+     * Récupère la zone de jeu associée à un joueur spécifique.
+     * @param joueur Le joueur dont on cherche la zone.
+     * @return La ZoneJoueur correspondante ou null si le joueur n'est pas trouvé.
+     */
+    public ZoneJoueur getZone(Joueur joueur) {
+        for (ZoneJoueur z : zonesJoueur) if (z.joueur == joueur) return z;
+        return null;
+    }
+
+    /**
+     * Accède à l'objet ZoneCarte représentant le centre du plateau.
+     * @return La zone centrale.
+     */
     public ZoneCarte getZoneCentre() {
         return zoneCentre;
     }
-    
+
+    /**
+     * Retourne une représentation textuelle de l'état du plateau.
+     * @return Une chaîne de caractères indiquant le nombre de cartes au centre.
+     */
     @Override
     public String toString() {
         return "Plateau{ cartes au centre=" + zoneCentre.cartes.size() + " }";

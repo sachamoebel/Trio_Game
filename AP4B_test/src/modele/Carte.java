@@ -25,7 +25,7 @@ public class Carte implements Serializable {
     public int getValeur() {
         return type.getValeur();
     }
-    
+
     /**
      * Retourne la carte (la rend visible)
      */
@@ -61,16 +61,8 @@ public class Carte implements Serializable {
         return this.type == autre.type;
     }
     
-    // ========== GETTERS ==========
-    
     public TypeCarte getType() {
         return type;
-    }
-    
-    // ========== SETTERS ==========
-    
-    public void setType(TypeCarte type) {
-        this.type = type;
     }
     
     /**

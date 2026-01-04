@@ -18,9 +18,8 @@ public enum TypeCarte {
 
     private final int valeur;
     private final String description;
-    private final Color couleur; // Nouvel attribut
+    private final Color couleur;
 
-    // Constructeur mis à jour
     TypeCarte(int valeur, String description, Color couleur) {
         this.valeur = valeur;
         this.description = description;

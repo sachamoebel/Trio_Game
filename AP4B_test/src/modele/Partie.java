@@ -12,7 +12,6 @@ import java.util.Map;
 public class Partie implements Serializable {
     private List<Joueur> joueurs;
     private Plateau plateau = new Plateau();
-    private List<Carte> paquet;
     private Joueur joueurCourant;
     private int indiceCourant = 0;
     private Map<Integer, Integer> scores;
@@ -21,151 +20,74 @@ public class Partie implements Serializable {
     private boolean terminee = false;
 
     /**
-     * Constructeur de la classe Jeu
+     * Constructeur de la classe Partie
      */
     public Partie() {
         this.joueurs = new ArrayList<>();
-        this.paquet = new ArrayList<>();
         this.scores = new HashMap<>();
         this.retourneesCeTour = new ArrayList<>();
         this.indiceCourant = 0;
     }
 
     /**
-     * Démarre une nouvelle partie
+     * Démarre une nouvelle partie en distribuant les cartes et en désignant le premier joueur
      */
     public void demarrerPartie() {
-        // Initialiser et distribuer les cartes
         plateau.distribuerCartes(joueurs.size(), joueurs);
 
-        // Définir le premier joueur
         indiceCourant = 0;
         joueurCourant = joueurs.get(0);
     }
 
+    /**
+     * Ajoute une zone de jeu spécifique pour un joueur sur le plateau
+     * @param id L'identifiant du joueur
+     */
     public void ajouterZoneJoueur(int id) {
         plateau.zonesJoueur.add(new ZoneJoueur(getJoueurById(id)));
     }
 
     /**
-     * Joue un tour avec une carte sélectionnée
-     */
-    /*
-    public String jouerTour(Carte carte) {
-        if (carte == null) {
-            return "Carte invalide!";
-        }
-
-        // Vérifier si on peut retourner cette carte
-        if (!plateau.peutRetourner(carte, joueurs)) {
-            return "Vous ne pouvez retourner que la première ou dernière carte d'une main, ou n'importe quelle carte du centre!";
-        }
-
-        // Retourner la carte
-        if (plateau.retournerCarte(carte)) {
-            retourneesCeTour.add(carte);
-        } else {
-            return "Cette carte est déjà retournée!";
-        }
-
-        // Vérifier selon le nombre de cartes retournées
-        if (retourneesCeTour.size() == 2) {
-            // Vérifier si les 2 premières cartes sont identiques
-            if (!retourneesCeTour.get(0).equals(retourneesCeTour.get(1))) {
-                String msg = "❌ Les deux cartes ne correspondent pas!";
-                // NE PAS cacher immédiatement - l'interface graphique le fera après un délai
-                // Pour la version console, on cache après que l'utilisateur appuie sur Entrée
-                return msg;
-            }
-            return "✅ Deux cartes identiques! Cherchez la troisième...";
-        }
-
-        if (retourneesCeTour.size() == 3) {
-            // Vérifier si on a un trio
-            if (plateau.verifierTrio(retourneesCeTour.get(0),
-                                    retourneesCeTour.get(1),
-                                    retourneesCeTour.get(2))) {
-
-                // Trio trouvé!
-                TypeCarte typeTrio = retourneesCeTour.get(0).getType();
-
-                plateau.retirerTrio(retourneesCeTour, joueurs);
-
-                // AJOUTER le trio au joueur courant
-                Trio trio = new Trio(typeTrio);
-                for (Carte c : retourneesCeTour) {
-                    trio.ajouterCarte(c);
-                }
-                joueurCourant.ajouterTrio(trio);
-
-                retourneesCeTour.clear();
-
-                // Vérification spéciale pour le Type 7
-                if (typeTrio == TypeCarte.TYPE7) {
-                     return "🎉 TRIO SPÉCIAL DE TYPE 7 TROUVÉ! " + joueurCourant.getNom() +
-                            " a trouvé le trio " + typeTrio.getDescription() + " et GAGNE LA PARTIE!";
-                }
-
-                // Vérification pour les 3 trios
-                if (joueurCourant.getTriosGagnes().size() >= 3) {
-                    return "🏆 TROIS TRIOS! " + joueurCourant.getNom() +
-                           " a trouvé 3 trios (" + joueurCourant.getDescriptionTrios() + ") et GAGNE LA PARTIE!";
-                }
-
-                // Le joueur rejoue
-                return "🎉 TRIO TROUVÉ! " + joueurCourant.getNom() +
-                       " a trouvé le trio " + typeTrio.getDescription() + " et rejoue!";
-            } else {
-                String msg = "❌ Ce n'est pas un trio!";
-                // NE PAS cacher immédiatement - l'interface graphique le fera après un délai
-                return msg;
-            }
-        }
-
-        return "✓ Carte retournée: " + carte.getType().getDescription() + " (valeur: " + carte.getValeur() + ")";
-    }*/
-
-    /**
-     * Cache toutes les cartes retournées (appelé après un échec)
-     */
-    public void cacherretourneesCeTour() {
-        for (Carte carte : retourneesCeTour) {
-            carte.cacher();
-        }
-        retourneesCeTour.clear();
-    }
-
-    /**
-     * Cache les cartes retournées ET change de joueur (pour les échecs)
-     */
-    public void gererEchec() {
-        cacherretourneesCeTour();
-        changerJoueur();
-    }
-
-    /**
-     * Change le joueur courant
+     * Change le joueur courant vers le joueur suivant dans la liste
      */
     public void changerJoueur() {
         indiceCourant = (indiceCourant + 1) % joueurs.size();
         joueurCourant = joueurs.get(indiceCourant);
     }
 
+    /**
+     * Ajoute un nouveau joueur à la liste des participants
+     * @param joueur Le joueur à ajouter
+     */
     public void ajouterJoueur(Joueur joueur) {
         joueurs.add(joueur);
     }
 
+    /**
+     * Définit ou met à jour le score d'un joueur
+     * @param id L'identifiant du joueur
+     * @param score Le score à lui attribuer
+     */
     public void ajouteScore(int id, int score) {
         scores.put(id, score);
     }
 
+    /**
+     * Enregistre une carte révélée durant le tour actuel
+     * @param c La carte qui vient d'être retournée
+     */
     public void ajouteCarteReveleeTour(Carte c) {
         retourneesCeTour.add(c);
     }
 
+    /**
+     * Vérifie si les cartes retournées ce tour sont identiques.
+     * Gère également la validation d'un Trio et les conditions de victoire immédiate.
+     * @return true si le tour peut continuer (cartes identiques ou 1ère carte), false si les cartes diffèrent
+     */
     public boolean verifieEtatTour() {
         List<Carte> tour = retourneesCeTour;
-        if (tour.size() < 2) return true; // Rien à vérifier
+        if (tour.size() < 2) return true;
 
         Carte c1 = tour.get(tour.size() - 2);
         Carte c2 = tour.getLast();
@@ -174,29 +96,25 @@ public class Partie implements Serializable {
             message = "Raté ! (" + c1.getValeur() + " est différent de " + c2.getValeur() + ")";
             return false;
         } else if (tour.size() == 3) {
-            // TRIO !
             int valeurTrio = c1.getValeur();
             message = "TRIO de " + valeurTrio + " ! Joueur " + joueurCourant.getNom() + " gagne ce trio.";
 
             ZoneJoueur zoneGagnant = plateau.getZone(joueurCourant);
             zoneGagnant.triosGagnes.add(new Trio(c1.getType()));
-            // Mise à jour du score numérique
             scores.put(joueurCourant.getId(), scores.get(joueurCourant.getId()) + 1);
 
             retirerCartesGagnees();
             retourneesCeTour.clear();
-
-            // Condition de victoire (2 trios pour gagner)
-            if (scores.get(joueurCourant.getId()) >= 3) {
-                message = "VICTOIRE DU JOUEUR " + joueurCourant.getNom() + " !!!";
-                terminee = true;
-            }
         } else {
-            message = "Bravo ! Encore une ...";
+            message = "Bravo ! Encore une carte ...";
         }
         return true;
     }
 
+    /**
+     * Finalise le tour : cache les cartes si nécessaire, vide la liste du tour
+     * et passe au joueur suivant.
+     */
     public void finTour() {
         for (Carte c : retourneesCeTour) c.cacher();
         retourneesCeTour.clear();
@@ -204,6 +122,9 @@ public class Partie implements Serializable {
         message = "Tour du joueur " + joueurCourant;
     }
 
+    /**
+     * Retire définitivement du plateau les cartes formant un trio gagné
+     */
     private void retirerCartesGagnees() {
         List<Carte> aRetirer = new ArrayList<>(retourneesCeTour);
         plateau.zoneCentre.cartes.removeAll(aRetirer);
@@ -211,26 +132,28 @@ public class Partie implements Serializable {
     }
 
     /**
-     * Vérifie si la partie est terminée :
+     * Vérifie si la partie est terminée selon les trois règles :
      * 1. Un joueur a obtenu 3 trios.
      * 2. Le trio de TYPE7 a été formé.
-     * 3. Plus aucune carte chez les joueurs ni au centre.
-     * @return true si la partie est terminée
+     * 3. Plus aucune carte disponible.
+     * @return true si la partie est terminée, false sinon
      */
     public boolean verifierFinPartie() {
-        // Condition 1 & 2 : Trio de 7 ou 3 trios
         for (Joueur joueur : joueurs) {
             for (Trio trio : plateau.getZone(joueur).triosGagnes) {
                 if (trio.getType() == TypeCarte.TYPE7) {
+                    message = "VICTOIRE DU JOUEUR " + joueurCourant.getNom() + " !!!";
+                    terminee = true;
                     return true;
                 }
             }
-            if (plateau.getZone(joueur).triosGagnes.size() >= 3) {
+            if (scores.get(joueur.getId()) >= 3) {
+                message = "VICTOIRE DU JOUEUR " + joueurCourant.getNom() + " !!!";
+                terminee = true;
                 return true;
             }
         }
 
-        // Condition 3 : Plus de cartes disponibles (Fin de partie par épuisement)
         if (!plateau.getCartesCentre().isEmpty()) {
             return false;
         }
@@ -245,45 +168,18 @@ public class Partie implements Serializable {
     }
 
     /**
-     * Obtient le gagnant de la partie selon les règles de victoire.
+     * Indique si la partie est actuellement terminée
+     * @return true si la partie est finie
      */
-    public Joueur obtenirGagnant() {
-        if (joueurs.isEmpty()) {
-            return null;
-        }
-
-        // 1. Priorité au trio de Type 7
-        for (Joueur joueur : joueurs) {
-            for (Trio trio : plateau.getZone(joueur).triosGagnes) {
-                if (trio.getType() == TypeCarte.TYPE7) {
-                    return joueur;
-                }
-            }
-        }
-
-        // 2. Priorité aux 3 trios
-        for (Joueur joueur : joueurs) {
-            if (plateau.getZone(joueur).triosGagnes.size() >= 3) {
-                return joueur;
-            }
-        }
-
-        // 3. Score le plus élevé (si fin par épuisement)
-        Joueur gagnant = joueurs.get(0);
-        for (Joueur joueur : joueurs) {
-            if (getScore(joueur) > getScore(gagnant)) {
-                gagnant = joueur;
-            }
-        }
-
-        return gagnant;
-    }
-
-    // ========== GETTERS ET SETTERS EXISTANTS ==========
     public boolean estTerminee() {
         return terminee;
     }
 
+    /**
+     * Recherche un joueur dans la partie grâce à son identifiant
+     * @param id L'identifiant recherché
+     * @return Le joueur correspondant ou null si non trouvé
+     */
     public Joueur getJoueurById(int id) {
         for (Joueur joueur : joueurs) {
             if (joueur.getId() == id) {
@@ -293,56 +189,81 @@ public class Partie implements Serializable {
         return null;
     }
 
+    /**
+     * Retourne l'indice du joueur dont c'est le tour
+     * @return L'indice dans la liste des joueurs
+     */
     public int getIndiceCourant() {
         return indiceCourant;
     }
 
+    /**
+     * Retourne le joueur qui doit jouer actuellement
+     * @return L'objet Joueur courant
+     */
     public Joueur getJoueurCourant() {
         return joueurCourant;
     }
 
+    /**
+     * Retourne le score d'un joueur spécifique
+     * @param joueur Le joueur concerné
+     * @return Le score numérique associé
+     */
     public int getScore(Joueur joueur) {
         return scores.get(joueur.getId());
     }
 
+    /**
+     * Récupère la liste des trios remportés par un joueur
+     * @param joueur Le joueur concerné
+     * @return La liste des trios gagnés
+     */
     public List<Trio> getTriosGagnes(Joueur joueur) {
         return plateau.getZone(joueur).getTriosGagnes();
     }
 
+    /**
+     * Retourne la liste de tous les joueurs de la partie
+     * @return Une nouvelle liste contenant les joueurs
+     */
     public List<Joueur> getJoueurs() {
         return new ArrayList<>(joueurs);
     }
 
+    /**
+     * Retourne le plateau de jeu
+     * @return L'objet Plateau
+     */
     public Plateau getPlateau() {
         return plateau;
     }
 
+    /**
+     * Retourne le message d'état actuel du jeu
+     * @return Le message formaté pour l'affichage
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Modifie le message d'état du jeu
+     * @param message Le nouveau message à afficher
+     */
     public void setMessage(String message) {
         this.message = message;
     }
 
+    /**
+     * Modifie le nom d'un joueur existant
+     * @param id L'identifiant du joueur
+     * @param nomJoueur Le nouveau nom à appliquer
+     */
     public void setNomJoueur(int id, String nomJoueur) {
         Joueur j = getJoueurById(id);
         if (j != null) {
             j.setNom(nomJoueur.trim());
         }
     }
-
-    public List<Carte> getCarteRetournees() {
-        return new ArrayList<>(retourneesCeTour);
-    }
-/*
-    public List<Carte> getOrdreAffichage() {
-        return ordreAffichage;
-    }
-
-    public void setOrdreAffichage(List<Carte> ordreAffichage) {
-        this.ordreAffichage = ordreAffichage;
-    }
-
- */
 }

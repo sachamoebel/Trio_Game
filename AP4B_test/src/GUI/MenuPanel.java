@@ -1,7 +1,5 @@
 package GUI;
 
-import network.ClientNetwork;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -12,7 +10,7 @@ import network.*;
  * Il permet à l'utilisateur de choisir entre héberger une nouvelle partie
  * ou en rejoindre une existante via une adresse IP.
  */
-public class ClientMenuPanel extends JPanel {
+public class MenuPanel extends JPanel {
     private final ClientFrame frame;
     private final Color GRADIENT_TOP = new Color(80, 50, 230);
     private final Color GRADIENT_BOTTOM = new Color(40, 160, 255);
@@ -25,7 +23,7 @@ public class ClientMenuPanel extends JPanel {
      *
      * @param frame La fenêtre principale parente permettant de basculer vers le jeu.
      */
-    public ClientMenuPanel(ClientFrame frame) {
+    public MenuPanel(ClientFrame frame) {
         this.frame = frame;
         initPanelSettings();
 
