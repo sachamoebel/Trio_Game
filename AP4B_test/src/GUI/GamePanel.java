@@ -9,6 +9,11 @@ import java.util.List;
 
 import modele.*;
 
+/**
+ * Panel principal de l'interface de jeu.
+ * Il assemble les différentes sections (en-tête, zone centrale, joueurs, scores)
+ * et gère la mise à jour visuelle globale selon l'état de la partie.
+ */
 public class ClientGamePanel extends JPanel {
     private final ClientFrame frame;
     private CenterCardPanel centerPanel;
@@ -20,10 +25,17 @@ public class ClientGamePanel extends JPanel {
     private String dernierMessageTraite = "";
     private boolean finDePartieAffichee = false;
 
+    /** Dimensions standards pour l'affichage des cartes */
     static final int LARGEUR_CARTE = 65;
     static final int HAUTEUR_CARTE = 100;
     static final int HAUTEUR_ZONE = 200;
 
+    /**
+     * Constructeur de ClientGamePanel.
+     * Initialise la disposition et crée les différentes sections de l'interface.
+     *
+     * @param frame La fenêtre principale parente
+     */
     public ClientGamePanel(ClientFrame frame) {
         this.frame = frame;
 
@@ -38,11 +50,19 @@ public class ClientGamePanel extends JPanel {
         add(board, BorderLayout.CENTER);
     }
 
+    /**
+     * Configure les propriétés de base du panel principal (layout et couleur).
+     */
     private void initMainPanel() {
         setLayout(new BorderLayout(20, 20));
         setBackground(ClientFrame.BACKGROUND_COLOR);
     }
 
+    /**
+     * Crée la section supérieure contenant les informations de tour et les boutons d'action.
+     *
+     * @return Un JPanel contenant l'en-tête
+     */
     private JPanel createHeaderSection() {
         lblInfo = new JLabel("En attente...", SwingConstants.CENTER);
         lblInfo.setFont(new Font("SansSerif", Font.BOLD, 20));
@@ -62,6 +82,11 @@ public class ClientGamePanel extends JPanel {
         return headerPanel;
     }
 
+    /**
+     * Crée les boutons d'interaction de l'en-tête (Scores et Règles).
+     *
+     * @return Un JPanel contenant les boutons
+     */
     private JPanel createHeaderButtons() {
         JButton btnToggleScore = ClientFrame.createRoundedButton("Afficher scores", false, new Color(0x7C8EF6), 140, 50);
         btnToggleScore.addActionListener(e -> {
@@ -81,6 +106,9 @@ public class ClientGamePanel extends JPanel {
         return btnContainer;
     }
 
+    /**
+     * Initialise la section latérale dédiée à l'affichage textuel des scores.
+     */
     private void createScoreSection() {
         JPanel contentArea = new JPanel(new BorderLayout(20, 0));
         contentArea.setOpaque(false);
@@ -117,6 +145,11 @@ public class ClientGamePanel extends JPanel {
         add(scoresPanel, BorderLayout.EAST);
     }
 
+    /**
+     * Crée la zone centrale du plateau de jeu et la grille des mains des joueurs.
+     *
+     * @return Un JPanel contenant le plateau
+     */
     private JPanel createGameSection() {
         JPanel gameBoard = new JPanel(new BorderLayout(0, 30));
 
@@ -142,6 +175,12 @@ public class ClientGamePanel extends JPanel {
         return gameBoard;
     }
 
+    /**
+     * Met à jour l'ensemble de l'interface graphique à partir des données de la partie reçue.
+     *
+     * @param p L'état actuel de la partie
+     * @param myId L'identifiant du joueur local
+     */
     public void refresh(Partie p, int myId) {
         refreshScores(p);
         refreshInfoLabel(p, myId);
@@ -153,6 +192,12 @@ public class ClientGamePanel extends JPanel {
         gererPopups(p);
     }
 
+    /**
+     * Met à jour le label d'information indiquant le tour actuel et les messages du jeu.
+     *
+     * @param p La partie actuelle
+     * @param myId L'identifiant du joueur local
+     */
     private void refreshInfoLabel(Partie p, int myId) {
         String nomJoueurCourant = "Inconnu";
         if(p.getJoueurCourant() != null) {
@@ -161,6 +206,12 @@ public class ClientGamePanel extends JPanel {
         lblInfo.setText("Moi: " + myId + " | Tour: " + nomJoueurCourant + " | " + p.getMessage());
     }
 
+    /**
+     * Recrée la liste visuelle des joueurs en mettant le joueur courant en haut de la liste.
+     *
+     * @param p La partie actuelle
+     * @param myId L'identifiant du joueur local
+     */
     private void refreshPlayersGrid(Partie p, int myId) {
         playersGrid.removeAll();
 
@@ -192,6 +243,13 @@ public class ClientGamePanel extends JPanel {
         playersGrid.repaint();
     }
 
+    /**
+     * Ajoute le panel spécifique d'un joueur à la grille.
+     *
+     * @param z La zone de cartes du joueur à ajouter
+     * @param myId L'identifiant du joueur local
+     * @param currentTurnIndex L'identifiant du joueur dont c'est le tour
+     */
     private void ajouterPanelJoueur(ZoneJoueur z, int myId, int currentTurnIndex) {
         PlayersCardPanel pPanel = new PlayersCardPanel(z, myId, currentTurnIndex, frame);
         pPanel.setPreferredSize(new Dimension(0, HAUTEUR_ZONE));
@@ -202,6 +260,11 @@ public class ClientGamePanel extends JPanel {
         playersGrid.add(Box.createVerticalStrut(5));
     }
 
+    /**
+     * Met à jour le contenu textuel de la zone des scores.
+     *
+     * @param partie La partie actuelle
+     */
     private void refreshScores(Partie partie) {
         StringBuilder sb = new StringBuilder();
 
@@ -220,6 +283,9 @@ public class ClientGamePanel extends JPanel {
         textAreaScores.setText(sb.toString());
     }
 
+    /**
+     * Affiche une boîte de dialogue stylisée en HTML présentant les règles officielles du jeu.
+     */
     private void afficherRegles() {
         String htmlContent = "<html><body style='width: 350px; font-family: sans-serif;'>" +
                 "<h2 style='text-align: center; color: #E6007E;'>RÈGLES DU JEU</h2>" +
@@ -247,6 +313,11 @@ public class ClientGamePanel extends JPanel {
         JOptionPane.showMessageDialog(frame, label, "Règles Officielles Trio", JOptionPane.PLAIN_MESSAGE);
     }
 
+    /**
+     * Gère l'affichage des fenêtres surgissantes (Popups) lors d'un Trio ou de la fin de partie.
+     *
+     * @param p La partie actuelle
+     */
     private void gererPopups(Partie p) {
         String msg = p.getMessage();
 
@@ -276,7 +347,28 @@ public class ClientGamePanel extends JPanel {
         if (p.estTerminee() && !finDePartieAffichee) {
             finDePartieAffichee = true;
             new Thread(() -> {
-                JOptionPane.showMessageDialog(this, p.getMessage() + "\n\nFélicitations !", "Partie Terminée", JOptionPane.WARNING_MESSAGE);
+                Joueur gagnant = p.getJoueurCourant();
+
+                JPanel winPanel = new JPanel(new BorderLayout());
+                JLabel textLbl = new JLabel("<html><h1 style='color:green;'>VICTOIRE !</h1>" +
+                        "<h3>" + gagnant.getNom() + " remporte la partie !</h3></html>", SwingConstants.CENTER);
+                winPanel.add(textLbl, BorderLayout.NORTH);
+
+                JPanel cardsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                List<Trio> trios = p.getTriosGagnes(gagnant);
+
+                for(Trio t : trios) {
+                    int val = t.getType().getValeur();
+                    ImageIcon icon = ImageHelper.getCardIcon(val);
+                    if(icon != null) {
+                        Image img = icon.getImage().getScaledInstance(80, 120, Image.SCALE_SMOOTH);
+                        JLabel cardLbl = new JLabel(new ImageIcon(img));
+                        cardsPanel.add(cardLbl);
+                    }
+                }
+                winPanel.add(cardsPanel, BorderLayout.CENTER);
+
+                JOptionPane.showMessageDialog(this, winPanel, "Partie Terminée", JOptionPane.PLAIN_MESSAGE);
             }).start();
         }
     }
