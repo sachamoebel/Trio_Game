@@ -28,4 +28,6 @@ The project is strictly organized into three core modules:
 2.  **Join:** Other players click "Rejoindre" (Join) and enter the host's IP address.
 3.  **Gameplay:** The host starts the game once the required number of players (3-6) have connected. Use the interface to reveal cards and form your winning trios.
 
-![Game Board](screenshots/game.png)
+![Menu](screenshots/menu.png)
+![Game Board](screenshots/gameplay.png)
+![Victory Display](screenshots/victory.png)
